@@ -182,13 +182,67 @@
 
   .custom-objects input { flex: 1; }
 
-  /* ── Accent color row ── */
+  /* ── Color input row ── */
   .color-row {
     display: flex;
     gap: 8px;
   }
 
   .color-row > .field { flex: 1; }
+
+  /* ── Color picker wrapper ── */
+  .color-input-wrap {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .color-input-wrap input[type="text"] {
+    flex: 1;
+  }
+
+  .color-picker-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 6px;
+    border: 1px solid #d1d1d1;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+
+  .color-picker-btn:hover {
+    border-color: #0f6cbd;
+  }
+
+  .color-picker-btn input[type="color"] {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    border: none;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .color-picker-btn input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  .color-picker-btn input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+  }
+
+  .color-picker-btn input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 4px;
+  }
 
   /* ── Buttons (Fluent 2) ── */
   .btn-row {
@@ -315,12 +369,20 @@
     <label>Page type <span class="required-star">*</span></label>
     <select id="pageType">
       <option value="">-- Select --</option>
-      <option value="Solution card">Solution card</option>
-      <option value="Solution hero">Solution hero</option>
+      <option value="Solution card / hero">Solution card / hero</option>
+      <option value="Featured solution">Featured solution</option>
       <option value="PDP hero">PDP hero</option>
       <option value="Product overview">Product overview</option>
       <option value="Architecture">Architecture</option>
-      <option value="Feature sections">Feature sections</option>
+    </select>
+  </div>
+
+  <!-- PDP Layout (conditional) -->
+  <div class="field" id="pdpLayoutField" style="display:none;">
+    <label>PDP layout <span class="required-star">*</span></label>
+    <select id="pdpLayout">
+      <option value="left">Left (content left, asset right)</option>
+      <option value="centered">Centered (content center, assets on sides)</option>
     </select>
   </div>
 
@@ -330,7 +392,7 @@
     <input type="text" id="solutionName" placeholder="e.g. Frontier onboarding" />
   </div>
 
-  <!-- Asset Brief (was System Concept) -->
+  <!-- Asset Brief -->
   <div class="field">
     <label>Asset brief <span class="required-star">*</span></label>
     <input type="text" id="assetBrief" placeholder="e.g. page description, system concept..." />
@@ -389,22 +451,42 @@
   <div class="color-row">
     <div class="field">
       <label>Background color</label>
-      <input type="text" id="bgColor" placeholder="#AABBCC or Azure mint" />
+      <div class="color-input-wrap">
+        <input type="text" id="bgColor" placeholder="#AABBCC or Azure mint" />
+        <div class="color-picker-btn">
+          <input type="color" id="bgColorPicker" value="#ffffff" title="Pick color" />
+        </div>
+      </div>
     </div>
     <div class="field">
       <label>Accent 1</label>
-      <input type="text" id="accent1" placeholder="#RRGGBB" maxlength="7" />
+      <div class="color-input-wrap">
+        <input type="text" id="accent1" placeholder="#RRGGBB" maxlength="7" />
+        <div class="color-picker-btn">
+          <input type="color" id="accent1Picker" value="#ffffff" title="Pick color" />
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="color-row" style="margin-top: 8px;">
     <div class="field">
       <label>Accent 2</label>
-      <input type="text" id="accent2" placeholder="#RRGGBB" maxlength="7" />
+      <div class="color-input-wrap">
+        <input type="text" id="accent2" placeholder="#RRGGBB" maxlength="7" />
+        <div class="color-picker-btn">
+          <input type="color" id="accent2Picker" value="#ffffff" title="Pick color" />
+        </div>
+      </div>
     </div>
     <div class="field">
       <label>Accent 3</label>
-      <input type="text" id="accent3" placeholder="#RRGGBB" maxlength="7" />
+      <div class="color-input-wrap">
+        <input type="text" id="accent3" placeholder="#RRGGBB" maxlength="7" />
+        <div class="color-picker-btn">
+          <input type="color" id="accent3Picker" value="#ffffff" title="Pick color" />
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -426,14 +508,20 @@
 // ── DOM refs ──
 const els = {
   pageType:          document.getElementById("pageType"),
+  pdpLayoutField:    document.getElementById("pdpLayoutField"),
+  pdpLayout:         document.getElementById("pdpLayout"),
   solutionName:      document.getElementById("solutionName"),
   assetBrief:        document.getElementById("assetBrief"),
   bgColor:           document.getElementById("bgColor"),
+  bgColorPicker:     document.getElementById("bgColorPicker"),
   primaryObject:     document.getElementById("primaryObject"),
   primaryObjCustom:  document.getElementById("primaryObjectCustom"),
   accent1:           document.getElementById("accent1"),
+  accent1Picker:     document.getElementById("accent1Picker"),
   accent2:           document.getElementById("accent2"),
+  accent2Picker:     document.getElementById("accent2Picker"),
   accent3:           document.getElementById("accent3"),
+  accent3Picker:     document.getElementById("accent3Picker"),
   customObj1:        document.getElementById("customObj1"),
   customObj2:        document.getElementById("customObj2"),
   objWarning:        document.getElementById("objWarning"),
@@ -445,6 +533,25 @@ const els = {
 };
 
 const objectCheckboxes = Array.from(document.querySelectorAll('#objectsGrid input[type="checkbox"]'));
+
+// ── Color picker sync ──
+function setupColorPicker(textInput, pickerInput) {
+  pickerInput.addEventListener("input", () => {
+    textInput.value = pickerInput.value.toUpperCase();
+    textInput.dispatchEvent(new Event("input"));
+  });
+  textInput.addEventListener("input", () => {
+    const val = textInput.value.trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      pickerInput.value = val;
+    }
+  });
+}
+
+setupColorPicker(els.bgColor, els.bgColorPicker);
+setupColorPicker(els.accent1, els.accent1Picker);
+setupColorPicker(els.accent2, els.accent2Picker);
+setupColorPicker(els.accent3, els.accent3Picker);
 
 // ── Helpers ──
 
@@ -499,6 +606,7 @@ function isValid() {
 }
 
 function buildPrompt() {
+  const pageType      = els.pageType.value;
   const solutionName  = els.solutionName.value.trim();
   const assetBrief    = els.assetBrief.value.trim().toLowerCase();
   const bgColor       = els.bgColor.value.trim();
@@ -506,10 +614,38 @@ function buildPrompt() {
   const objects       = getSelectedObjects().map(o => o.toLowerCase());
   const colors        = getAccentColors().toLowerCase();
 
-  // Build adaptive sections
-  let bgPart = bgColor
-    ? `Clean minimal gradient background \u201C${bgColor}\u201D.`
-    : "Clean minimal gradient background with soft neutral tones.";
+  // Build adaptive background section based on page type
+  let bgPart = "";
+  if (pageType === "Solution card / hero") {
+    if (bgColor) {
+      bgPart = `Background uses a lighter shade of \u201C${bgColor}\u201D as a soft gradient.`;
+    } else {
+      bgPart = "Background uses a lighter shade from the color palette as a soft gradient.";
+    }
+  } else if (pageType === "Featured solution") {
+    if (bgColor) {
+      bgPart = `Background uses \u201C${bgColor}\u201D from the primary color palette or a darker tone as a rich gradient.`;
+    } else {
+      bgPart = "Background uses a primary color or darker tone from the brand palette as a rich gradient.";
+    }
+  } else {
+    if (bgColor) {
+      bgPart = `Background gradient based on \u201C${bgColor}\u201D.`;
+    } else {
+      bgPart = "Clean gradient background with contextually appropriate tones.";
+    }
+  }
+
+  // PDP layout instruction
+  let layoutPart = "";
+  if (pageType === "PDP hero") {
+    const layout = els.pdpLayout.value;
+    if (layout === "left") {
+      layoutPart = " Position the 3D asset composition on the right side of the frame, leaving clear open space on the left for text and content overlay.";
+    } else {
+      layoutPart = " Split the 3D asset composition into two groups placed on the left and right edges of the frame, leaving clear open space in the center for text and content overlay.";
+    }
+  }
 
   let objectPart = "";
   if (primaryObject && objects.length > 0) {
@@ -523,15 +659,15 @@ function buildPrompt() {
   }
 
   let colorPart = colors
-    ? `Color palette uses soft pastels with subtle \u201C${colors}\u201D used sparingly for highlights.`
-    : "Color palette uses soft pastels with subtle accents used sparingly for highlights.";
+    ? `Color palette uses vibrant, candy-like tones with \u201C${colors}\u201D as accent highlights.`
+    : "Color palette uses vibrant, candy-like tones with rich accent highlights.";
 
   return [
-    `Premium 3D studio illustration for \u201C${solutionName}\u201D in a Microsoft-style enterprise render. ${bgPart}`,
+    `Premium 3D studio illustration for \u201C${solutionName}\u201D in the latest Microsoft rebrand visual style. ${bgPart}${layoutPart}`,
     objectPart,
-    "Use solid semi-matte satin materials with rounded edges and realistic shadows. No floating chaos. Maintain grounded composition and clear visual hierarchy. Keep the design simple and concise, avoiding overly complex elements or dense visual noise. Keep the max number of objects under 5.",
-    `${colorPart} Avoid bright blue cube clich\u00E9s or repeated monitor compositions.`,
-    "Overall feel: modern, confident, legible, simple, enterprise-grade. Premium Microsoft aesthetic. No glow. No overly AI-styled effects."
+    "Use glossy, translucent glass and semi-transparent satin materials with smooth rounded edges. Include layered translucent panels, 3D capsule and pill shapes, small spheres, and rounded cubes connected by thin wire lines. Apply realistic studio lighting with dramatic reflections and subtle depth-of-field. Composition should feel grounded and structured with clear visual hierarchy \u2014 not chaotic. Keep the max number of distinct objects under 5.",
+    `${colorPart} Embrace rich, saturated hues (blues, purples, teals, pinks, greens, oranges) on translucent surfaces. Avoid flat matte looks, bright blue cube clich\u00E9s, or repeated monitor compositions.`,
+    "Overall feel: premium, modern, vibrant, dimensional, enterprise-grade. New Microsoft rebrand aesthetic with glossy glass materials and layered depth. No flat glow effects. Reference images are attached for style guidance."
   ].join("\n");
 }
 
@@ -555,9 +691,10 @@ function applyPageTypeDefaults(pageType) {
   els.primaryObject.value = "";
   els.primaryObjCustom.value = "";
   els.primaryObjCustom.style.display = "none";
+  els.pdpLayoutField.style.display = "none";
 
   switch (pageType) {
-    case "Solution card":
+    case "Solution card / hero":
       els.primaryObject.value = "Custom";
       els.primaryObjCustom.style.display = "block";
       els.primaryObjCustom.value = "Connected cards";
@@ -568,6 +705,7 @@ function applyPageTypeDefaults(pageType) {
       break;
     case "PDP hero":
       els.primaryObject.value = "Platform interface";
+      els.pdpLayoutField.style.display = "block";
       break;
   }
 
@@ -582,7 +720,7 @@ function checkObjectByValue(val) {
 
 // ── Event listeners ──
 const allInputs = [
-  els.pageType, els.solutionName, els.assetBrief,
+  els.pageType, els.pdpLayout, els.solutionName, els.assetBrief,
   els.bgColor,
   els.primaryObject, els.primaryObjCustom,
   els.accent1, els.accent2, els.accent3,
@@ -627,15 +765,21 @@ els.btnCopy.addEventListener("click", async () => {
 
 els.btnReset.addEventListener("click", () => {
   els.pageType.value = "";
+  els.pdpLayoutField.style.display = "none";
+  els.pdpLayout.value = "left";
   els.solutionName.value = "";
   els.assetBrief.value = "";
   els.bgColor.value = "";
+  els.bgColorPicker.value = "#ffffff";
   els.primaryObject.value = "";
   els.primaryObjCustom.value = "";
   els.primaryObjCustom.style.display = "none";
   els.accent1.value = "";
+  els.accent1Picker.value = "#ffffff";
   els.accent2.value = "";
+  els.accent2Picker.value = "#ffffff";
   els.accent3.value = "";
+  els.accent3Picker.value = "#ffffff";
   els.customObj1.value = "";
   els.customObj2.value = "";
   objectCheckboxes.forEach(cb => {
