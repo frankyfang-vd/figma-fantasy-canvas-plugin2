@@ -1,0 +1,11 @@
+{
+  "name": "Microsoft Asset Prompt Generator",
+  "id": "microsoft-asset-prompt-generator-001",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
+}
